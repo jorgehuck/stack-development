@@ -16,7 +16,7 @@ services:
     image: adminer:latest
     restart: always
     ports:
-      - 8080:8080
+      - $ADMINER_PORT_HOST:8080
     depends_on:
       - mariadb
     links:
