@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    ports:
+      - $MYSQL_PORT_HOST:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD_HOST
+      MYSQL_USER: $MYSQL_USER_HOST
+      MYSQL_PASSWORD: $MYSQL_PASSWORD_HOST
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - mariadb
+    links:
+      - mariadb
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+    ports:
+      - 9000:3000
+
+volumes:
+  grafana-data:
